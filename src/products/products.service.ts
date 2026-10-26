@@ -3,78 +3,38 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateProductDto } from '../dto/create-product.dto.js';
-import { UpdateProductDto } from '../dto/update-product.dto.js';
+import { CreateProductDto } from './dto/create-product.dto.js';
+import { UpdateProductDto } from './dto/update-product.dto.js';
+import { PrismaService } from '../prisma/prisma.service.js';
 
 @Injectable()
 export class ProductsService {
-  private products = [
-    {
-      id: 1,
-      title: 'iPhone 16',
-      price: 1200,
-    },
-    {
-      id: 2,
-      title: 'MacBook Pro',
-      price: 2200,
-    },
-  ];
+  constructor(private readonly prisma: PrismaService) {}
 
-  getProducts() {
-    return this.products;
+  async getProducts() {
+    return this.prisma.product.findMany();
   }
 
-  getProduct(id: number) {
-    const product = this.products.find((product) => product.id === id);
-
-    if (!product) {
-      throw new NotFoundException('Mahsulot topilmadi');
-    }
-
-    return product;
+  async getProduct(id: number) {
+    return this.prisma.product.findUnique({
+      where: { id },
+    });
   }
 
-  createProduct(dto: CreateProductDto) {
-    const exists = this.products.find((product) => product.id === dto.id);
-
-    if (exists) {
-      throw new ConflictException('Bu ID allaqachon mavjud');
-    }
-
-    const product = { ...dto };
-
-    this.products.push(product);
-
-    return {
-      message: 'Yangi mahsulot yaratildi',
-      product,
-    };
+  async createProduct(body: CreateProductDto) {
+    return this.prisma.product.create({ data: body });
   }
 
-  updateProduct(id: number, dto: UpdateProductDto) {
-    const product = this.products.find((p) => p.id === id);
-
-    if (!product) {
-      throw new NotFoundException('Mahsulot topilmadi');
-    }
-
-    product.title = dto.title;
-    product.price = dto.price;
-
-    return {
-      message: 'Mahsulot yangilandi',
-      product,
-    };
+  async updateProduct(id: number, body: UpdateProductDto) {
+    return this.prisma.product.update({
+      where: { id },
+      data: body,
+    });
   }
 
-  deleteProduct(id: number) {
-    this.getProduct(id);
-
-    this.products = this.products.filter((product) => product.id !== id);
-
-    return {
-      message: 'Mahsulot o‘chirildi',
-    };
+  async deleteProduct(id: number) {
+    return this.prisma.product.delete({
+      where: { id },
+    });
   }
 }

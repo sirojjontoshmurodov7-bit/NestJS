@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
 import bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto.js';
+import { AuthService } from '../auth/auth.service.js';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private authservice: AuthService,
+  ) {}
 
   async register(body: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -46,9 +50,16 @@ export class UsersService {
     if (!isPasswordCorrect) {
       throw new BadRequestException('Incorrect password');
     }
+
+    const token = this.authservice.generateToken({
+      id: user.id,
+      email: user.email,
+    });
+
     return {
       message: 'Login successful',
       user,
+      token,
     };
   }
 }

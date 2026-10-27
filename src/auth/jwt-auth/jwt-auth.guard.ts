@@ -24,6 +24,9 @@ export class JwtAuthGuard implements CanActivate {
     try {
       this.jwtService.verify(token);
 
+      const payload = this.jwtService.decode(token)
+      request.user = payload
+
       return true;
     } catch (error) {
       throw new UnauthorizedException("Token noto'g'ri!");

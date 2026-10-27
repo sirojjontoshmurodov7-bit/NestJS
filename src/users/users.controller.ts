@@ -1,10 +1,16 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { ProductsService } from '../products/products.service.js';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto.js';
 import { UsersService } from './users.service.js';
 import { LoginDto } from './dto/login.dto.js';
 import { JwtAuthGuard } from '../auth/jwt-auth/jwt-auth.guard.js';
-
 
 @Controller('users')
 export class UsersController {
@@ -24,5 +30,14 @@ export class UsersController {
     body: LoginDto,
   ) {
     return this.userService.login(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  getProfile(@Req() request: any) {
+    return {
+      message: 'Foydalanuvchi malumotlari:',
+      user: request.user,
+    };
   }
 }
